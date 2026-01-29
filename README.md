@@ -22,13 +22,13 @@
 #### 🐧 Linux 服务器
 适用于 Ubuntu, CentOS, Debian 等系统。自动安装为 Systemd 服务，开机自启。
 ```bash
-curl -fsSL https://gh-proxy.com/https://raw.githubusercontent.com/sfee1212/SiTV-SERVER/main/install_scripts/install.sh | sudo bash
+curl -fsSL https://raw.githubusercontent.com/sfee1212/SiTV-SERVER/main/install_scripts/install.sh | sudo bash
 ```
 
 #### 🖥️ Windows 环境
 适用于 Windows 10/11/Server。自动创建桌面快捷方式。
 ```powershell
-irm https://gh-proxy.com/https://raw.githubusercontent.com/sfee1212/SiTV-SERVER/main/install_scripts/install.ps1 | iex
+irm https://raw.githubusercontent.com/sfee1212/SiTV-SERVER/main/install_scripts/install.ps1 | iex
 ```
 
 ## ✨ 有傻子都能看懂的管理页面
