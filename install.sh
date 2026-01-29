@@ -3,7 +3,7 @@ set -e
 
 # ================= 配置区域 =================
 # 请将下面的 URL 替换为您 GitHub Actions 构建出来的 Linux 二进制下载链接
-EXE_URL="https://github.com/sfee1212/SiTV-SERVER/releases/download/v1.0.0/saileitv-server-linux"
+EXE_URL="https://gh-proxy.com/https://github.com/sfee1212/SiTV-SERVER/releases/download/v1.0.0/saileitv-server-linux"
 # ===========================================
 
 INSTALL_DIR="/opt/sitv"
