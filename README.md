@@ -43,6 +43,8 @@ irm https://gh-proxy.com/https://raw.githubusercontent.com/sfee1212/SiTV-SERVER/
 ```
 
 ## ✨ 有傻子都能看懂的管理页面
+WEB管理页面：http://localhost:22125
+登录密码：admin123
 <img width="1270" height="906" alt="df4786c5-e681-4df4-9e68-24c93d81371b" src="https://github.com/user-attachments/assets/cb55bee3-5482-4fa3-87f9-afb171a8d64f" />
 
 
