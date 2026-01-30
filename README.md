@@ -19,6 +19,12 @@
 无需下载任何文件，直接在服务器/电脑终端执行下方命令即可。
 *(脚本会自动从 GitHub 下载最新稳定版并安装)*
 
+#### 🐧 Docker 启动（支持多架构）
+适用于 X86、ARM64、ARMv7 等架构，自动适配设备架构。
+```bash
+docker run -d --restart=always -p 22125:22125 --name sitv-server yhtv/sitv-server:latest
+```
+
 #### 🐧 Linux 服务器
 适用于 Ubuntu, CentOS, Debian 等系统。自动安装为 Systemd 服务，开机自启。
 ```bash
@@ -27,8 +33,13 @@ curl -fsSL https://gh-proxy.com/https://raw.githubusercontent.com/sfee1212/SiTV-
 
 #### 🖥️ Windows 环境
 适用于 Windows 10/11/Server。自动创建桌面快捷方式。
+IPv6专用
 ```powershell
 irm https://gh-proxy.com/https://raw.githubusercontent.com/sfee1212/SiTV-SERVER/main/install.ps1 | iex
+```
+IPv4专用
+```powershell
+irm https://gh-proxy.com/https://raw.githubusercontent.com/sfee1212/SiTV-SERVER/main/install_v4.ps1 | iex
 ```
 
 ## ✨ 有傻子都能看懂的管理页面
