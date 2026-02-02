@@ -4,6 +4,7 @@ set -e
 # ================= 配置区域 =================
 RAW_BASE="https://raw.githubusercontent.com/sfee1212/SiTV/main/dist_encrypted"
 SOURCE_URL="$RAW_BASE/saileitv_server.py"
+# 注意：项目依赖清单通常在主仓库根目录
 REQUIREMENTS_URL="https://raw.githubusercontent.com/sfee1212/SiTV/main/requirements.txt"
 # ===========================================
 
@@ -28,21 +29,33 @@ sudo "$INSTALL_DIR/venv/bin/pip" install --upgrade pip
 
 # 4. 下载源码和依赖清单
 echo ">>> 正在下载源码..."
-sudo curl -L -o "$INSTALL_DIR/saileitv_server.py" "$SOURCE_URL"
-sudo curl -L -o "$INSTALL_DIR/requirements.txt" "$REQUIREMENTS_URL"
+# 使用 -f 选项，如果 404 则返回错误
+sudo curl -fsSL -o "$INSTALL_DIR/saileitv_server.py" "$SOURCE_URL"
+sudo curl -fsSL -o "$INSTALL_DIR/requirements.txt" "$REQUIREMENTS_URL" || {
+    echo "[WARN] 无法从 $REQUIREMENTS_URL 下载依赖清单，尝试从通用路径下载..."
+    sudo curl -fsSL -o "$INSTALL_DIR/requirements.txt" "https://raw.githubusercontent.com/sfee1212/SiTV-SERVER/main/requirements.txt"
+}
 
 # 安装项目依赖
 echo ">>> 正在安装项目依赖..."
 sudo "$INSTALL_DIR/venv/bin/pip" install -r "$INSTALL_DIR/requirements.txt"
 
 # 5. 下载源码和运行时库
-echo ">>> 正在下载源码和运行时..."
-sudo curl -L -o "$INSTALL_DIR/saileitv_server.py" "$SOURCE_URL"
-
-echo ">>> 正在同步 pyarmor_runtime..."
+echo ">>> 正在下载源码库..."
+# 如果本地有多个运行时目录，尝试自动识别并重命名为标准名称
+cd "$INSTALL_DIR"
+# 注意：PyArmor 生成的运行时目录可能叫 pyarmor_runtime_xxxxxx
+# 我们在 GitHub 上手动管理的建议直接叫 pyarmor_runtime
+# 如果您上传的是 pyarmor_runtime_000000，脚本会尝试处理
 sudo mkdir -p "$INSTALL_DIR/pyarmor_runtime"
-sudo curl -L -o "$INSTALL_DIR/pyarmor_runtime/__init__.py" "$RAW_BASE/pyarmor_runtime/__init__.py"
-sudo curl -L -o "$INSTALL_DIR/pyarmor_runtime/pyarmor_runtime.so" "$RAW_BASE/pyarmor_runtime/pyarmor_runtime.so"
+
+echo ">>> 同步运行时环境..."
+# 逐个下载核心运行文件
+sudo curl -fsSL -o "$INSTALL_DIR/pyarmor_runtime/__init__.py" "$RAW_BASE/pyarmor_runtime/__init__.py" || \
+sudo curl -fsSL -o "$INSTALL_DIR/pyarmor_runtime/__init__.py" "$RAW_BASE/pyarmor_runtime_000000/__init__.py"
+
+sudo curl -fsSL -o "$INSTALL_DIR/pyarmor_runtime/pyarmor_runtime.so" "$RAW_BASE/pyarmor_runtime/pyarmor_runtime.so" || \
+sudo curl -fsSL -o "$INSTALL_DIR/pyarmor_runtime/pyarmor_runtime.so" "$RAW_BASE/pyarmor_runtime_000000/pyarmor_runtime.so"
 
 echo "[OK] 环境配置完成"
 
@@ -75,4 +88,5 @@ sudo systemctl restart sitv
 echo ">>> 部署成功！"
 echo "服务状态: sudo systemctl status sitv"
 echo "查看日志: sudo journalctl -u sitv -f"
+
 
