@@ -2,12 +2,11 @@
 set -e
 
 # ================= 配置区域 =================
-# 请将下面的 URL 替换为您 GitHub Actions 构建出来的 Linux 二进制下载链接
-EXE_URL="https://gh-proxy.com/https://github.com/sfee1212/SiTV-SERVER/releases/download/v1.0.0/saileitv-server-linux"
+SOURCE_URL="https://raw.githubusercontent.com/sfee1212/SiTV-SERVER/main/saileitv_server.py"
+REQUIREMENTS_URL="https://raw.githubusercontent.com/sfee1212/SiTV-SERVER/main/requirements.txt"
 # ===========================================
 
 INSTALL_DIR="/opt/sitv"
-EXE_NAME="saileitv-server"
 
 echo ">>> SiTV Linux 一键部署"
 
@@ -17,13 +16,31 @@ if [ ! -d "$INSTALL_DIR" ]; then
     echo "[OK] 创建目录: $INSTALL_DIR"
 fi
 
-# 2. 下载
-echo ">>> 正在下载..."
-sudo curl -L -o "$INSTALL_DIR/$EXE_NAME" "$EXE_URL"
-sudo chmod +x "$INSTALL_DIR/$EXE_NAME"
-echo "[OK] 下载完成"
+# 2. 安装系统依赖 (针对 Debian/Ubuntu)
+echo ">>> 正在安装运行环境..."
+sudo apt-get update && sudo apt-get install -y python3 python3-pip python3-venv libffi-dev
 
-# 3. 配置 Systemd
+# 3. 准备虚拟环境并安装依赖
+echo ">>> 正在准备 Python 环境..."
+sudo python3 -m venv "$INSTALL_DIR/venv"
+sudo "$INSTALL_DIR/venv/bin/pip" install --upgrade pip
+
+# 4. 下载源码和依赖清单
+echo ">>> 正在下载源码..."
+sudo curl -L -o "$INSTALL_DIR/saileitv_server.py" "$SOURCE_URL"
+sudo curl -L -o "$INSTALL_DIR/requirements.txt" "$REQUIREMENTS_URL"
+
+# 安装项目依赖
+echo ">>> 正在安装项目依赖..."
+sudo "$INSTALL_DIR/venv/bin/pip" install -r "$INSTALL_DIR/requirements.txt"
+
+
+echo ">>> 正在下载和运行时..."
+sudo curl -L -o "$INSTALL_DIR/saileitv_server.py" "$SOURCE_URL"
+
+echo "[OK] 环境配置完成"
+
+# 6. 配置 Systemd
 echo ">>> 配置服务..."
 sudo bash -c "cat > /etc/systemd/system/sitv.service <<EOF
 [Unit]
@@ -34,7 +51,9 @@ After=network.target
 Type=simple
 User=root
 WorkingDirectory=$INSTALL_DIR
-ExecStart=$INSTALL_DIR/$EXE_NAME
+Environment=\"PATH=$INSTALL_DIR/venv/bin\"
+Environment=\"PYTHONUNBUFFERED=1\"
+ExecStart=$INSTALL_DIR/venv/bin/python saileitv_server.py
 Restart=always
 RestartSec=10
 
@@ -50,3 +69,4 @@ sudo systemctl restart sitv
 echo ">>> 部署成功！"
 echo "服务状态: sudo systemctl status sitv"
 echo "查看日志: sudo journalctl -u sitv -f"
+
