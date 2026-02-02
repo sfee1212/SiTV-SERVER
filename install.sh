@@ -2,11 +2,15 @@
 set -e
 
 # ================= 配置区域 =================
-RAW_BASE="https://raw.githubusercontent.com/sfee1212/SiTV/main/dist_encrypted"
+RAW_BASE="https://raw.githubusercontent.com/sfee1212/SiTV-SERVER/main"
 SOURCE_URL="$RAW_BASE/saileitv_server.py"
-# 注意：项目依赖清单通常在主仓库根目录
-REQUIREMENTS_URL="https://raw.githubusercontent.com/sfee1212/SiTV/main/requirements.txt"
+REQUIREMENTS_URL="$RAW_BASE/requirements.txt"
 # ===========================================
+
+# 通用下载函数 (现在仓库是 Public，无需 Token)
+download_file() {
+    sudo curl -fsSL -o "$2" "$1"
+}
 
 INSTALL_DIR="/opt/sitv"
 
@@ -29,33 +33,31 @@ sudo "$INSTALL_DIR/venv/bin/pip" install --upgrade pip
 
 # 4. 下载源码和依赖清单
 echo ">>> 正在下载源码..."
-# 使用 -f 选项，如果 404 则返回错误
-sudo curl -fsSL -o "$INSTALL_DIR/saileitv_server.py" "$SOURCE_URL"
-sudo curl -fsSL -o "$INSTALL_DIR/requirements.txt" "$REQUIREMENTS_URL" || {
-    echo "[WARN] 无法从 $REQUIREMENTS_URL 下载依赖清单，尝试从通用路径下载..."
-    sudo curl -fsSL -o "$INSTALL_DIR/requirements.txt" "https://raw.githubusercontent.com/sfee1212/SiTV-SERVER/main/requirements.txt"
+download_file "$SOURCE_URL" "$INSTALL_DIR/saileitv_server.py" || {
+    echo "[ERROR] 下载失败！404 错误通常是因为仓库是私有的。"
+    echo "请检查 GITHUB_TOKEN 是否设置，或将仓库设为 Public。"
+    exit 1
+}
+
+download_file "$REQUIREMENTS_URL" "$INSTALL_DIR/requirements.txt" || {
+    echo "[WARN] 无法从 $REQUIREMENTS_URL 下载依赖清单，尝试备用路径..."
+    download_file "https://raw.githubusercontent.com/sfee1212/SiTV-SERVER/main/requirements.txt" "$INSTALL_DIR/requirements.txt"
 }
 
 # 安装项目依赖
 echo ">>> 正在安装项目依赖..."
 sudo "$INSTALL_DIR/venv/bin/pip" install -r "$INSTALL_DIR/requirements.txt"
 
-# 5. 下载源码和运行时库
-echo ">>> 正在下载源码库..."
-# 如果本地有多个运行时目录，尝试自动识别并重命名为标准名称
+# 5. 下载加密后的源码和运行时库
+echo ">>> 正在下载加密源码和运行时..."
 cd "$INSTALL_DIR"
-# 注意：PyArmor 生成的运行时目录可能叫 pyarmor_runtime_xxxxxx
-# 我们在 GitHub 上手动管理的建议直接叫 pyarmor_runtime
-# 如果您上传的是 pyarmor_runtime_000000，脚本会尝试处理
-sudo mkdir -p "$INSTALL_DIR/pyarmor_runtime"
+download_file "$SOURCE_URL" "saileitv_server.py"
 
+# 从截图看，pyarmor_runtime 文件直接在根目录 (__init__.py 和 pyarmor_runtime.so)
+sudo mkdir -p "pyarmor_runtime"
 echo ">>> 同步运行时环境..."
-# 逐个下载核心运行文件
-sudo curl -fsSL -o "$INSTALL_DIR/pyarmor_runtime/__init__.py" "$RAW_BASE/pyarmor_runtime/__init__.py" || \
-sudo curl -fsSL -o "$INSTALL_DIR/pyarmor_runtime/__init__.py" "$RAW_BASE/pyarmor_runtime_000000/__init__.py"
-
-sudo curl -fsSL -o "$INSTALL_DIR/pyarmor_runtime/pyarmor_runtime.so" "$RAW_BASE/pyarmor_runtime/pyarmor_runtime.so" || \
-sudo curl -fsSL -o "$INSTALL_DIR/pyarmor_runtime/pyarmor_runtime.so" "$RAW_BASE/pyarmor_runtime_000000/pyarmor_runtime.so"
+download_file "$RAW_BASE/__init__.py" "pyarmor_runtime/__init__.py"
+download_file "$RAW_BASE/pyarmor_runtime.so" "pyarmor_runtime/pyarmor_runtime.so"
 
 echo "[OK] 环境配置完成"
 
