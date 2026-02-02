@@ -1,0 +1,5 @@
+flask>=2.0.0
+requests>=2.25.0
+curl-cffi>=0.5.10
+Flask-Caching>=2.0.0
+
