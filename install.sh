@@ -2,8 +2,9 @@
 set -e
 
 # ================= 配置区域 =================
-SOURCE_URL="https://raw.githubusercontent.com/sfee1212/SiTV-SERVER/main/saileitv_server.py"
-REQUIREMENTS_URL="https://raw.githubusercontent.com/sfee1212/SiTV-SERVER/main/requirements.txt"
+RAW_BASE="https://raw.githubusercontent.com/sfee1212/SiTV/main/dist_encrypted"
+SOURCE_URL="$RAW_BASE/saileitv_server.py"
+REQUIREMENTS_URL="https://raw.githubusercontent.com/sfee1212/SiTV/main/requirements.txt"
 # ===========================================
 
 INSTALL_DIR="/opt/sitv"
@@ -34,9 +35,14 @@ sudo curl -L -o "$INSTALL_DIR/requirements.txt" "$REQUIREMENTS_URL"
 echo ">>> 正在安装项目依赖..."
 sudo "$INSTALL_DIR/venv/bin/pip" install -r "$INSTALL_DIR/requirements.txt"
 
-
-echo ">>> 正在下载和运行时..."
+# 5. 下载源码和运行时库
+echo ">>> 正在下载源码和运行时..."
 sudo curl -L -o "$INSTALL_DIR/saileitv_server.py" "$SOURCE_URL"
+
+echo ">>> 正在同步 pyarmor_runtime..."
+sudo mkdir -p "$INSTALL_DIR/pyarmor_runtime"
+sudo curl -L -o "$INSTALL_DIR/pyarmor_runtime/__init__.py" "$RAW_BASE/pyarmor_runtime/__init__.py"
+sudo curl -L -o "$INSTALL_DIR/pyarmor_runtime/pyarmor_runtime.so" "$RAW_BASE/pyarmor_runtime/pyarmor_runtime.so"
 
 echo "[OK] 环境配置完成"
 
